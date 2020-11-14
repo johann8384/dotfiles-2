@@ -1,0 +1,40 @@
+function check_path() {
+  entry=$1
+  if [[ -d $entry ]]; then
+    return
+  elif [[ -L $entry ]]; then
+    return
+  elif [[ -f $entry ]]; then
+    return
+  fi
+
+  false
+}
+
+function build_path_array() {
+  for entry in "$@"; do
+    if check_path "$entry"; then
+      paths[${#paths[@]}]=$entry
+    else
+      echo "Requested $entry be added to the path but it is not a valid path";
+    fi
+  done
+}
+
+paths=(~/bin /usr/local/bin /usr/local/sbin /opt/local/bin /opt/local/sbin /opt/local/bin /opt/local/sbin)
+build_path_array $(brew --prefix)/opt/findutils/libexec/gnubin
+build_path_array /usr/local/opt/coreutils/libexec/gnubin
+build_path_array /usr/local/opt/curl/bin
+build_path_array /usr/local/opt/go/libexec/bin $HOME/go/bin
+build_path_array /usr/local/opt/python/libexec/bin 
+build_path_array /usr/local/opt/openssl@1.1/bin /usr/local/opt/openssl/bin
+build_path_array /usr/local/opt/sqlite/bin
+build_path_array /usr/local/opt/qt/bin
+build_path_array /usr/local/opt/libxml2/bin
+build_path_array ${HOME}/.krew/bin
+build_path_array /usr/local/opt/sqlite/bin
+
+for entry in ${paths[@]}; do
+  export PATH=$entry:$PATH;
+done
+

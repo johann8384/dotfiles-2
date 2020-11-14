@@ -1,0 +1,28 @@
+#set regexp
+set tabsize 2
+set tabstospaces
+#set nonewline
+
+## C/C++
+include "~/.nano/c.nanorc"
+## Ruby
+include "~/.nano/ruby.nanorc"
+
+
+## Dockerfile
+include "~/.nano/Dockerfile.nanorc"
+
+## Puppet
+include "~/.nano/puppet.nanorc"
+
+## python
+include "~/.nano/python.nanorc"
+
+## json
+include "~/.nano/json.nanorc"
+
+## sh
+include "~/.nano/sh.nanorc"
+
+## sh
+include "~/.nano/yaml.nanorc"

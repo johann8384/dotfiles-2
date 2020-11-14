@@ -1,0 +1,42 @@
+#export GOPATH=$HOME/go
+#export GOROOT=/usr/local/Cellar/go/1.15.2/libexec
+#export JAVA_HOME=$(/usr/libexec/java_home)
+#export GROOVY_HOME=/usr/local/opt/groovy/libexec
+export LC_CTYPE=C
+export LANG=C
+export LC_ALL="en_US.UTF-8"
+export LANG="en_US"
+export CLICOLOR=1
+export LSCOLORS=ExFxBxDxCxegedabagacad
+export EDITOR=/usr/local/bin/nano
+export BLOCKSIZE=1k
+export LDFLAGS="-L/usr/local/opt/openssl/lib"
+export CPPFLAGS="-I/usr/local/opt/openssl/include"
+
+# Don’t clear the screen after quitting a manual page
+export MANPAGER="less -X"
+# Highlight section titles in manual pages
+export LESS_TERMCAP_md="$ORANGE"
+
+# Larger bash history (allow 32³ entries; default is 500)
+#export HISTSIZE=32768
+#export HISTFILESIZE=$HISTSIZE
+
+# empty means unlimited
+export HISTSIZE=
+export HISTFILESIZE=$HISTSIZE
+export HISTTIMEFORMAT="%s "
+
+# Avoid duplicates
+HISTCONTROL=ignoredups:erasedups
+
+# Make some commands not show up in history
+export HISTIGNORE="ls:cd:cd -:pwd:exit:date:* --help"
+
+
+export NVM_DIR="$HOME/.nvm"
+. "/usr/local/opt/nvm/nvm.sh"
+
+export KUBECONFIG=~/.kube/aws-sso:~/.kube/config
+
+source ~/.aws/zepl/exports

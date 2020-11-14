@@ -1,0 +1,31 @@
+#!/bin/bash
+AWS="/usr/local/bin/aws"
+JQ="/usr/local/bin/jq -r"
+REGIONS=( "us-east-1" "us-east-2" "us-west-1" "us-west-2" "ap-northeast-1" "eu-west-1")
+SSO_ROLE_NAME=$1
+PROFILE=$2
+
+KUBE_CONFIG="./cluster-info/.kube/config"
+
+rm -rf ./cluster-info
+mkdir -p ./cluster-info/.kube
+
+function cluster-info {
+  local PROFILE=$1
+  local REGION=$2
+  
+  local CLUSTER_LIST=`${AWS}  --profile=${PROFILE} eks list-clusters --region=${REGION}`
+  local CLUSTER_NAME=""
+
+  echo ${CLUSTER_LIST} | ${JQ} -r -c '.clusters[]' | while read CLUSTER_NAME; 
+  do
+    ${AWS} --profile=${PROFILE} eks --region ${REGION} update-kubeconfig --name ${CLUSTER_NAME} --kubeconfig ${KUBE_CONFIG} --alias ${CLUSTER_NAME}
+    echo "Added ${PROFILE} ${REGION} ${CLUSTER_NAME}"
+  done
+}
+
+${AWS} --profile=${PROFILE} sts get-caller-identity
+for REGION in ${REGIONS[@]};
+do
+  cluster-info ${PROFILE} ${REGION}
+done

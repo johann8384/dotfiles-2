@@ -1,0 +1,77 @@
+#!/bin/bash
+ARGS_REQ=1
+
+die () {
+    echo >&2 "$@"
+    exit 1
+}
+
+if ! type "jq" > /dev/null; then
+  die "You must have JQ installed: https://github.com/stedolan/jq/wiki/Installation"  
+fi
+
+if ! type "aws" > /dev/null; then
+  die "You must have JQ installed: https://github.com/stedolan/jq/wiki/Installation"  
+fi
+
+if [ -z "$AWS_PROFILE" ]; then
+  die "AWS_PROFILE is empty, please set the AWS_PROFILE env var before using this command."
+fi
+
+if [ -z "$AWS_DEFAULT_REGION" ]; then
+  die "AWS_DEFAULT_REGION is empty, please set the AWS_DEFAULT_REGION env var before using this command."
+fi
+
+[ "$#" -eq "$ARGS_REQ" ] || die "$ARGS_REQ arguments required, $# provided, provide CLUSTER_NAME, AND OUTPUT_FILE"
+
+CLUSTER=$1
+#OUTPUTFILE=$3
+
+#OUTPUTDIR=${OUTPUTFILE%/*}
+
+#if [ ! -w "$OUTPUTDIR" ]; then
+#  printf "The OUTPUT_FILE location you provided ($OUTPUTDIR) is not writable.\n"
+#fi
+
+#if [ -f "$OUTPUTFILE" ]; then
+#  read -p "The OUTPUT_FILE already exists, do you want to replace it?\n" -n 1 -r
+#  echo    # (optional) move to a new line
+#  if [[ ! $REPLY =~ ^[Yy]$ ]] then
+#      die("Ok, exiting.")
+#  fi
+#fi
+
+AWS_DEFAULT_OUTPUT="json"
+
+## Check if we are logged into AWS
+#printf "Checking the session for AWS_PROFILE=$AWS_PROFILE\n"
+STS_STATUS=$(aws sts get-caller-identity)
+retVal=$?
+if [ $retVal -ne 0 ]; then
+    echo "\nYou do not have a valid SSO session for the profile you have provided, perhaps you need to login first?\n"
+fi
+
+K8S_USER_TOKEN=$(aws eks get-token --cluster-name $CLUSTER | jq -r .status.token)
+CLUSTER_INFO=$(aws eks describe-cluster --name $CLUSTER | jq -r '.cluster | {"certificateAuthority": .certificateAuthority.data, "endpointUrl":  .endpoint}')
+CA=$(echo $CLUSTER_INFO | jq .certificateAuthority)
+ENDPOINT=$(echo $CLUSTER_INFO | jq .endpointUrl)
+cat << EOF
+apiVersion: v1
+clusters:
+- cluster:
+    insecure-skip-tls-verify: true
+    server: $ENDPOINT
+  name: $CLUSTER
+contexts:
+- context:
+    cluster: $CLUSTER
+    user: $CLUSTER-user
+  name: $CLUSTER
+current-context: $CLUSTER
+kind: Config
+preferences: {}
+users:
+- name: $CLUSTER-user
+  user:
+    token: $K8S_USER_TOKEN
+EOF
